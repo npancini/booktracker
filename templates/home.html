@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %} Current Books {% endblock %}
+
+{% block content %}
+   <h3 class="center">Home</h3>
+      <h4>Add Book</h4>
+      <form action="/addb" method="POST">
+         <label>Title: </label>
+         <input type="text" name="title">
+         <label>Author: </label>
+         <input type="text" name="author">
+         <button type="submit" class="btn btn-primary btn-sm">Add</button>
+      </form>
+      <br>
+      <table class="table table-hover">
+         <thead>
+            <tr class="table-dark">
+               <th>Title</th>
+               <th>Author</th>
+               <th>Notes</th>
+               <th>Delete</th>
+            </tr>
+         </thead>
+         {% for book in books %}
+         <tbody>
+            <tr class="{{ 'table-primary' if loop.index0 % 2 == 0 else 'table-light' }}">
+               <td>{{book.title}}</td>
+               <td>{{book.author}}</td>
+               <td><a href="/book/{{book.id}}" type="button">View Details</a></td>
+               <td><a href="/deleteb/{{book.id}}" type="button">Delete</a></td>
+            </tr>
+         </tbody>
+         {% endfor%}
+      </table>
+{% endblock %}

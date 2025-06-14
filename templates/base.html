@@ -1,0 +1,51 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Book Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom_styles.css') }}">
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+            <div class="container-fluid">
+                <h2 class="navbar-brand">
+                    <img src="{{ url_for('static', filename='images/bt_logo.png') }}" class="logo">
+                    Book Tracker
+                </h2>
+                <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav me-auto">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                    <a class="nav-link" href="/home">Home
+                        <span class="visually-hidden">(current)</span>
+                    </a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/current">Currently Reading</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/finished">Finished Books</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="/stats">Stats</a>
+                    </li>
+                </ul>
+                <a type="button" class="btn btn-primary btn-sm" href="/logout">Logout</a>
+                {%endif%}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="marg">
+        {% block content %}
+        {% endblock %}
+    </main>
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

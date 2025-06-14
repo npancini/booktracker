@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %} {{ book.title }} {% endblock %}
+
+{% block content %}
+   <h1 class="center">{{ book.title }} by {{ book.author }}</h1>
+            {% if book.finished %}
+               <h4 class="center">Finished on {{ book.finish_date.strftime('%B %d, %Y') }}</h4>
+               <br>
+               <form method="post" action="{{url_for('mark_as_current', book_id=book.id)}}">
+                  <button type="submit" class="btn btn-primary btn-sm center_button">Currently Reading</button>
+               </form>
+            {% else %}
+               <form method="post" action="{{url_for('mark_as_finished', book_id=book.id)}}">
+                  <button type="submit" class="btn btn-primary btn-sm center_button">Finished</button>
+               </form>
+            {% endif %}
+            <br>
+            <h3 class="center marg">Add New Note</h3>
+            <div class="form_wrapper">
+            <form method="post">
+               <label>Chapter</label>
+               <input class="form-control form-control-sm" type="number" name="chapter">
+               <label>Page Number</label>
+               <input class="form-control form-control-sm" type="number" name="page">
+               <br>
+               <input type="hidden" name="form_id" value="note">
+               <textarea name="content" class="form-control" rows="4" cols="50" required></textarea>
+               <br>
+               <button type="submit" class="btn btn-primary btn-sm center_button">Add Note</button>
+            </form>
+            </div>
+            <br>
+            {%if book.notes%}
+            <h2 class="center">Notes</h2>
+            {% for note in book.notes %}
+            <div class="card text-white bg-primary mb-3 center_block" style="max-width: 50rem;">
+               {% if note.chapter %}
+               <div class="card-header">Chapter {{ note.chapter }}</div>
+               {% endif %}
+               {% if note.page %}
+               <div class="card-header">Page {{ note.page }}</div>
+               {% endif %}
+               <div class="card-body">
+                  <p class="card-text center">{{note.content}}</p>
+                  <small><a href="/deleten/{{note.id}}" type="button" class="text-white">Delete Note</a></small>
+               </div>
+            </div>
+            {% endfor%}
+            {%endif%}
+{% endblock %}

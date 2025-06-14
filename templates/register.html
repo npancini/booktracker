@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %} Register {% endblock %}
+
+{% block content %}
+    <h3 class="center">Create an Account</h3>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          {% for message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="form_wrapper">
+    <form method="POST">
+        <label>Username:</label>
+        <input type="text" name="username" required><br><br>
+
+        <label>Password:</label>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit" class="btn btn-primary btn-sm center_button">Register</button>
+    </form>
+    </div>
+    <p class="center">Already have an account? <a href="/login" type="button" class="btn btn-primary btn-sm">Login here</a></p>
+{% endblock %}

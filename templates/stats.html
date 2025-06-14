@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %} Stats {% endblock %}
+
+{% block content %}
+    {% if count == 0 %}
+        <h3 class="center">No Books Finished in {{ selected_year }}</h3>
+    {% elif count == 1 %}
+        <h3 class="center">{{ count }} Book Finished in {{ selected_year }}</h3>
+    {% elif count > 1 %}
+        <h3 class="center">{{ count }} Books Finished in {{ selected_year }}</h3>
+    {%endif%}
+    <br>
+      <form method="GET" action="/stats">
+        <label for="year" class="form-label mt-4">Select Year</label>
+        <select name="year" id="year" class="form-select" onchange="this.form.submit()">
+            {% for year in years %}
+            <option value="{{ year }}" {% if year|string == selected_year %}selected{%endif%}>{{year}}</option>
+            {% endfor %}
+        </select>
+        </form>
+      {% if bookscol1 and bookscol2 %}
+        <div class="two_column_wrapper">
+            <ul>
+                {% for book in bookscol1 %}
+                    <li><a href="/book/{{book.id}}" type="button" class="btn btn-primary btn-sm btn_marg">{{book.title}}</a></li>
+                {%endfor%}
+            </ul>
+            <ul>
+                {% for book in bookscol2 %}
+                    <li><a href="/book/{{book.id}}" type="button" class="btn btn-primary btn-sm btn_marg">{{book.title}}</a></li>
+                {%endfor%}
+            </ul>
+        </div>
+        {%elif bookscol1%}
+            <ul class="center_list">
+                {% for book in bookscol1 %}
+                    <li><a href="/book/{{book.id}}" type="button" class="btn btn-primary btn-sm">{{book.title}}</a></li>
+                {%endfor%}
+            </ul>
+        {% endif %}
+        {% if count > 0 %}
+        <h5 class="center">Number of Books Read per Month</h5>
+        <canvas id="booksChart" class="center_block" style="width:100%;max-width:700px;max-height:400px;"></canvas>
+        {%endif%}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const chart = new Chart('booksChart', {
+    type: 'bar',
+    data: {
+      labels: {{ labels | tojson }},
+      datasets: [{
+        data: {{ data | tojson }},
+        backgroundColor: 'teal',
+      }]
+    },
+    options: {
+        plugins: {
+            legend: {
+            display: false
+            }
+        },
+        scales: {
+            y: {
+            beginAtZero: true,
+            ticks: {
+                stepSize: 1
+            }
+            }
+        }
+    }
+  });
+</script>
+{%endblock%}
