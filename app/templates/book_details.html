@@ -7,11 +7,11 @@
             {% if book.finished %}
                <h4 class="center">Finished on {{ book.finish_date.strftime('%B %d, %Y') }}</h4>
                <br>
-               <form method="post" action="{{url_for('mark_as_current', book_id=book.id)}}">
+               <form method="post" action="{{url_for('routes.mark_as_current', book_id=book.id)}}">
                   <button type="submit" class="btn btn-primary btn-sm center_button">Currently Reading</button>
                </form>
             {% else %}
-               <form method="post" action="{{url_for('mark_as_finished', book_id=book.id)}}">
+               <form method="post" action="{{url_for('routes.mark_as_finished', book_id=book.id)}}">
                   <button type="submit" class="btn btn-primary btn-sm center_button">Finished</button>
                </form>
             {% endif %}
