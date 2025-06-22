@@ -4,14 +4,6 @@
 
 {% block content %}
     <h3 class="center">Create an Account</h3>
-
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-          {% for message in messages %}
-            <p>{{ message }}</p>
-          {% endfor %}
-      {% endif %}
-    {% endwith %}
     <div class="form_wrapper">
     <form method="POST">
         <label>Username:</label>
