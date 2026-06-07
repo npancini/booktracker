@@ -1,0 +1,78 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Book Tracker{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/btbootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    <header>
+
+
+        <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'books:list' %}">📚 Book Tracker</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor01">
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                <a class="nav-link" href="{% url 'books:list' %}">Books
+                    <span class="visually-hidden">(current)</span>
+                </a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="{% url 'books:reading_stats' %}">Reading Statistics</a>
+                </li>
+                <li class="nav-item">
+                <a class="nav-link" href="{% url 'books:friends' %}">Friends</a>
+                </li>
+            </ul>
+                    <div class="d-flex align-items-center ms-auto">
+
+                        <form method="GET" action="{% url 'books:book_search' %}" class="d-flex">
+                            <input
+                                type="text"
+                                name="q"
+                                placeholder="Search Book"
+                                value="{{ request.GET.q|default:'' }}"
+                                class="form-control me-2"
+                            >
+
+                            <button class="btn btn-secondary" type="submit">
+                                Search
+                            </button>
+                        </form>
+
+                        <form action="{% url 'logout' %}" method="post" class="ms-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-secondary">
+                                Logout
+                            </button>
+                        </form>
+
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        </nav>
+    </header>
+
+
+    <main style="padding: 20px;">
+        {% block content %}
+        {% endblock %}
+    </main>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block scripts %}
+{% endblock %}
+</body>
+</html>

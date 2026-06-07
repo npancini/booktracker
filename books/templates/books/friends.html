@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Friends{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+
+  <h2 class="mb-4">👥 Friends</h2>
+
+  <!-- Search for users -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Find People</h5>
+      <div class="d-flex gap-2">
+        <input
+          id="searchInput"
+          type="text"
+          class="form-control"
+          placeholder="Search by username…"
+        >
+        <button class="btn btn-primary" onclick="searchUsers()">Search</button>
+      </div>
+      <div id="searchResults" class="mt-3"></div>
+    </div>
+  </div>
+
+  <!-- Incoming friend requests -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">Pending Requests</h5>
+      <div id="pendingRequests"><em class="text-muted">Loading…</em></div>
+    </div>
+  </div>
+
+  <!-- Friends list -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">My Friends</h5>
+      <div id="friendsList"><em class="text-muted">Loading…</em></div>
+    </div>
+  </div>
+
+  <!-- Friend's bookshelf (shown when you click a friend) -->
+  <div id="friendShelf" class="card mb-4" style="display:none;">
+    <div class="card-body">
+      <button class="btn btn-sm btn-outline-secondary mb-3" onclick="closeFriendShelf()">← Back to Friends</button>
+      <h5 class="card-title" id="shelfTitle"></h5>
+      <div id="shelfBooks"></div>
+    </div>
+  </div>
+
+  <!-- Friend's notes on a book (shown when you click a book) -->
+  <div id="friendNotes" class="card mb-4" style="display:none;">
+    <div class="card-body">
+      <button class="btn btn-sm btn-outline-secondary mb-3" onclick="closeFriendNotes()">← Back to Bookshelf</button>
+      <h5 class="card-title" id="notesTitle"></h5>
+      <div id="notesList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const csrfToken = '{{ csrf_token }}';
+  let currentFriendUsername = null;
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  async function apiFetch(url, options = {}) {
+    const defaults = {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken,
+      },
+      credentials: 'same-origin',
+    };
+    const res = await fetch(url, { ...defaults, ...options });
+    return res.json();
+  }
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+
+  // ── Load friends ─────────────────────────────────────────────────────────
+
+  async function loadFriends() {
+    const data = await apiFetch('/books/api/friends/');
+    const el = document.getElementById('friendsList');
+    if (!data.friends || data.friends.length === 0) {
+      el.innerHTML = '<em class="text-muted">No friends yet. Search for people above!</em>';
+      return;
+    }
+    el.innerHTML = data.friends.map(f => `
+      <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+        <span>
+          <strong>${f.username}</strong>
+        </span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-outline-primary" onclick="showFriendShelf('${f.username}')">
+            📚 View Books
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="removeFriend(${f.id}, '${f.username}')">
+            Remove
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Load incoming requests ────────────────────────────────────────────────
+
+  async function loadRequests() {
+    const data = await apiFetch('/books/api/friends/requests/');
+    const el = document.getElementById('pendingRequests');
+    if (!data.requests || data.requests.length === 0) {
+      el.innerHTML = '<em class="text-muted">No pending requests.</em>';
+      return;
+    }
+    el.innerHTML = data.requests.map(r => `
+      <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+        <span><strong>${r.from_user}</strong> wants to be your friend</span>
+        <div class="d-flex gap-2">
+          <button class="btn btn-sm btn-success" onclick="respondRequest(${r.id}, true)">Accept</button>
+          <button class="btn btn-sm btn-outline-danger" onclick="respondRequest(${r.id}, false)">Decline</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Search users ──────────────────────────────────────────────────────────
+
+  async function searchUsers() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+    const data = await apiFetch(`/books/api/friends/search/?q=${encodeURIComponent(q)}`);
+    const el = document.getElementById('searchResults');
+    if (!data.results || data.results.length === 0) {
+      el.innerHTML = '<em class="text-muted">No users found.</em>';
+      return;
+    }
+    el.innerHTML = data.results.map(u => {
+      let btn = '';
+      if (u.status === 'friend') {
+        btn = '<span class="badge bg-success">Friends ✓</span>';
+      } else if (u.status === 'pending_sent') {
+        btn = '<span class="badge bg-secondary">Request Sent</span>';
+      } else if (u.status === 'pending_received') {
+        btn = '<span class="badge bg-warning text-dark">They sent you a request — check Pending above</span>';
+      } else {
+        btn = `<button class="btn btn-sm btn-primary" onclick="sendRequest(${u.id}, this)">Add Friend</button>`;
+      }
+      return `
+        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+          <span>${u.username}</span>
+          ${btn}
+        </div>
+      `;
+    }).join('');
+  }
+
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchUsers();
+  });
+
+  // ── Send friend request ───────────────────────────────────────────────────
+
+  async function sendRequest(toUserId, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    const data = await apiFetch('/books/api/friends/request/send/', {
+      method: 'POST',
+      body: JSON.stringify({ to_user_id: toUserId }),
+    });
+    if (data.success) {
+      btn.textContent = 'Request Sent';
+      btn.className = 'btn btn-sm btn-secondary';
+    } else {
+      btn.textContent = data.error || 'Error';
+      btn.disabled = false;
+    }
+  }
+
+  // ── Respond to request ────────────────────────────────────────────────────
+
+  async function respondRequest(requestId, accept) {
+    await apiFetch(`/books/api/friends/request/${requestId}/respond/`, {
+      method: 'POST',
+      body: JSON.stringify({ accept }),
+    });
+    loadRequests();
+    loadFriends();
+  }
+
+  // ── Remove friend ─────────────────────────────────────────────────────────
+
+  async function removeFriend(userId, username) {
+    if (!confirm(`Remove ${username} from friends?`)) return;
+    await apiFetch('/books/api/friends/remove/', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId }),
+    });
+    loadFriends();
+  }
+
+  // ── Friend's bookshelf ────────────────────────────────────────────────────
+
+  async function showFriendShelf(username) {
+    currentFriendUsername = username;
+    document.getElementById('friendShelf').style.display = 'block';
+    document.getElementById('shelfTitle').textContent = `${username}'s Books`;
+    document.getElementById('shelfBooks').innerHTML = '<em class="text-muted">Loading…</em>';
+    document.getElementById('friendNotes').style.display = 'none';
+
+    const data = await apiFetch(`/books/api/friends/${username}/books/`);
+    const el = document.getElementById('shelfBooks');
+
+    if (!data.books || data.books.length === 0) {
+      el.innerHTML = '<em class="text-muted">No books yet.</em>';
+      return;
+    }
+
+    el.innerHTML = data.books.map(b => `
+      <div class="card text-white bg-primary mb-2" style="cursor:pointer;" onclick="showFriendNotes('${username}', ${b.id}, '${b.title.replace(/'/g, "\\'")}')">
+        <div class="card-body d-flex align-items-center gap-3">
+          ${b.cover_url ? `<img src="${b.cover_url}" alt="" style="height:60px;border-radius:4px;">` : ''}
+          <div>
+            <strong>${b.title}</strong><br>
+            <small>${b.author}</small>
+            ${b.finished ? ' <span class="badge bg-light text-dark">Finished</span>' : ''}
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function closeFriendShelf() {
+    document.getElementById('friendShelf').style.display = 'none';
+    document.getElementById('friendNotes').style.display = 'none';
+    currentFriendUsername = null;
+  }
+
+  // ── Friend's notes ────────────────────────────────────────────────────────
+
+  async function showFriendNotes(username, bookId, bookTitle) {
+    document.getElementById('friendNotes').style.display = 'block';
+    document.getElementById('notesTitle').textContent = `Notes on "${bookTitle}"`;
+    document.getElementById('notesList').innerHTML = '<em class="text-muted">Loading…</em>';
+
+    const data = await apiFetch(`/books/api/friends/${username}/books/${bookId}/notes/`);
+    const el = document.getElementById('notesList');
+
+    if (!data.notes || data.notes.length === 0) {
+      el.innerHTML = '<em class="text-muted">No notes for this book.</em>';
+      return;
+    }
+
+    el.innerHTML = data.notes.map(n => `
+      <div class="border rounded p-3 mb-2">
+        <p class="mb-1">${n.content}</p>
+        <small class="text-muted">
+          ${n.page_number ? `Page ${n.page_number}` : ''}
+          ${n.chapter ? ` · Chapter ${n.chapter}` : ''}
+        </small>
+      </div>
+    `).join('');
+  }
+
+  function closeFriendNotes() {
+    document.getElementById('friendNotes').style.display = 'none';
+  }
+
+  function closeFriendShelf() {
+    document.getElementById('friendShelf').style.display = 'none';
+    document.getElementById('friendNotes').style.display = 'none';
+    currentFriendUsername = null;
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────────────
+  loadFriends();
+  loadRequests();
+</script>
+{% endblock %}

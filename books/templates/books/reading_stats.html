@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book.title }}{% endblock %}
+
+{% block content %}
+
+<h1>Reading Statistics</h1>
+
+<form method="GET">
+
+    <select
+        name="year"
+        class="form-select mb-4"
+        onchange="this.form.submit()"
+    >
+
+        {% for year in years %}
+
+            <option
+                value="{{ year }}"
+                {% if year == selected_year %}
+                    selected
+                {% endif %}
+            >
+                {{ year }}
+            </option>
+
+        {% endfor %}
+
+    </select>
+
+</form>
+
+{% if total_books == 0 %}
+
+    <p>No books finished in {{ selected_year }}</p>
+
+{% elif total_books == 1 %}
+
+    <p>
+        {{ total_books }} book finished in {{ selected_year }}
+    </p>
+
+{% else %}
+
+    <p>
+        {{ total_books }} books finished in {{ selected_year }}
+    </p>
+
+{% endif %}
+
+<div class="d-flex justify-content-center">
+    <div style="width: 700px;">
+        <canvas id="statsChart"></canvas>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+
+const monthlyCounts = {{ monthly_counts|safe }};
+
+const ctx = document.getElementById('statsChart');
+
+new Chart(ctx, {
+    type: 'bar',
+
+    data: {
+        labels: [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec'
+        ],
+
+        datasets: [{
+            label: 'Books Finished',
+            data: monthlyCounts,
+            backgroundColor: 'black',
+        }]
+    },
+
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                }
+            }
+        }
+    }
+});
+
+</script>
+{% endblock %}

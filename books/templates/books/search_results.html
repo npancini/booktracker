@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Search Results for "{{ query }}"</h2>
+
+<p>{{ num_found }} results found</p>
+
+<div class="results-grid">
+    {% for book in results %}
+    <div class="card mb-3" style="max-width: 500px;">
+        <div class="row g-0">
+
+        <div class="col-md-4">
+            {% if book.cover_url %}
+            <img src="{{ book.cover_url }}" class="img-fluid rounded-start">
+            {% else %}
+            <div class="p-3 text-muted">No Image</div>
+            {% endif %}
+        </div>
+
+        <div class="col-md-8">
+            <div class="card-body">
+            <h5>{{ book.title }}</h5>
+            <p>{{ book.author }}</p>
+
+            <form method="POST" action="{% url 'books:add_book_from_search' %}">
+                {% csrf_token %}
+                <input type="hidden" name="title" value="{{ book.title }}">
+                <input type="hidden" name="author" value="{{ book.author }}">
+                <input type="hidden" name="cover_url" value="{{ book.cover_url }}">
+                <button class="btn btn-primary">Add Book</button>
+            </form>
+            </div>
+        </div>
+
+        </div>
+    </div>
+    {% empty %}
+        <p>No results found.</p>
+    {% endfor %}
+</div>
+
+<div class="pagination">
+    {% if page > 1 %}
+        <a href="?q={{ query }}&page={{ page|add:'-1' }}">Previous</a>
+    {% endif %}
+
+    <span>Page {{ page }}</span>
+
+    <a href="?q={{ query }}&page={{ page|add:'1' }}">Next</a>
+</div>
+
+{% endblock %}
