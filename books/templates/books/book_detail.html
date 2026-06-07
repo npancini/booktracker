@@ -78,7 +78,8 @@
   window.__vite_plugin_react_preamble_installed__ = true;
 </script>
 
-<script type="module" src="http://localhost:5173/src/notes_main.jsx"></script>
+{% load static %}
+<script type="module" src="{% static 'dist/assets/index-CLnIZcZu.js' %}"></script>
 
 <form action="{% url 'books:delete' book.pk %}" method="post">
     {% csrf_token %}
