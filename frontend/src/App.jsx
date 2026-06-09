@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import AddBookModal from "./AddBookModal"
+import NotesApp from "./NotesApp";
 
 export default function App() {
   const [books, setBooks] = useState([])
@@ -22,4 +23,16 @@ export default function App() {
         <AddBookModal onBookAdded={handleBookAdded} />
       </div>
   )
+}
+
+export default function App() {
+  const notesRoot = document.getElementById("notes-root");
+
+  const bookId = notesRoot?.dataset?.bookId;
+
+  return (
+    <>
+      {notesRoot && <NotesApp bookId={bookId} />}
+    </>
+  );
 }
