@@ -3,11 +3,14 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import NotesApp from "./NotesApp";
 
-ReactDOM.createRoot(document.getElementById("react-root")).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+const reactRoot = document.getElementById("react-root");
+if (reactRoot) {
+  ReactDOM.createRoot(reactRoot).render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+}
 
 const notesRoot = document.getElementById("notes-root");
 
