@@ -70,13 +70,6 @@
 
 <div id="notes-root" data-book-id="{{ book.id }}"></div>
 
-<script type="module">
-  import RefreshRuntime from "http://localhost:5173/@react-refresh";
-  RefreshRuntime.injectIntoGlobalHook(window);
-  window.$RefreshReg$ = () => {};
-  window.$RefreshSig$ = () => (type) => type;
-  window.__vite_plugin_react_preamble_installed__ = true;
-</script>
 
 {% load static %}
 <script type="module" src="{% static 'dist/assets/index-CLnIZcZu.js' %}"></script>
