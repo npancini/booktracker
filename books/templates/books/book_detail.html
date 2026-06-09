@@ -71,8 +71,6 @@
 <div id="notes-root" data-book-id="{{ book.id }}"></div>
 
 
-{% load static %}
-<script type="module" src="{% static 'dist/assets/index-CLnIZcZu.js' %}"></script>
 
 <form action="{% url 'books:delete' book.pk %}" method="post">
     {% csrf_token %}
@@ -86,6 +84,9 @@
 <a href="{% url 'books:list' %}">Back to list</a>
 
 {% endblock %}
+
+{% load static %}
+<script type="module" src="{% static 'dist/assets/index-CLnIZcZu.js' %}"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
