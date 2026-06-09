@@ -4,6 +4,7 @@ import App from "./App";
 import NotesApp from "./NotesApp";
 
 const reactRoot = document.getElementById("react-root");
+
 if (reactRoot) {
   ReactDOM.createRoot(reactRoot).render(
     <React.StrictMode>
